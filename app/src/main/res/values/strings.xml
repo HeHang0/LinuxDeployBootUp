@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">BootUp</string>
+    <string name="start_label">启动：</string>
+    <string name="confirm_label">确认：</string>
+    <string name="comma">,</string>
+    <string name="btn_pos">按钮位置</string>
+    <string name="save">保存</string>
+</resources>
