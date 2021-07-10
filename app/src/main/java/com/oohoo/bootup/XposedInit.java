@@ -50,20 +50,21 @@ public class XposedInit implements IXposedHookLoadPackage
                             DataOutputStream os = new DataOutputStream(process.getOutputStream());
 //                            os.writeBytes("echo -e `date`\": start before\\n\" >> /sdcard/bootup.txt \n");
                             os.writeBytes("while true; do r=`getprop sys.boot_completed`; [[ \"$r\" -eq \"1\" ]] && break;sleep 1;done \n");
-//                            os.writeBytes("input keyevent KEYCODE_POWER \n");
+////                            os.writeBytes("input keyevent KEYCODE_POWER \n");
+////                            os.writeBytes("sleep 1 \n");
+//                            os.writeBytes("input keyevent KEYCODE_WAKEUP \n");
+//                            os.writeBytes("sleep 0.5 \n");
+//                            os.writeBytes("input swipe 500 720 500 0 \n");
 //                            os.writeBytes("sleep 1 \n");
-                            os.writeBytes("input keyevent KEYCODE_WAKEUP \n");
-                            os.writeBytes("sleep 1 \n");
-                            os.writeBytes("input swipe 500 720 500 0 \n");
-                            os.writeBytes("sleep 1 \n");
-                            os.writeBytes("input tap 100 5 \n");
-                            os.writeBytes("echo `date`\": 2sys.boot_completed \" >> /sdcard/bootup.txt \n");
-                            os.writeBytes("echo -e `getprop sys.boot_completed`\"\\n\" >> /sdcard/bootup.txt \n");
-                            os.writeBytes("echo -e `date`\": start end...\\n\" >> /sdcard/bootup.txt \n");
-                            os.writeBytes("/system/bin/screencap -p /sdcard/bootup-screenshot.png \n");
+//                            os.writeBytes("input tap 100 5 \n");
+//                            os.writeBytes("echo `date`\": 2sys.boot_completed \" >> /sdcard/bootup.txt \n");
+//                            os.writeBytes("echo -e `getprop sys.boot_completed`\"\\n\" >> /sdcard/bootup.txt \n");
+//                            os.writeBytes("echo -e `date`\": start end...\\n\" >> /sdcard/bootup.txt \n");
+//                            os.writeBytes("/system/bin/screencap -p /sdcard/bootup-screenshot.png \n");
+//                            os.writeBytes("am start -n " + LinuxDeployPackage + "/" + LinuxDeployLauncher + " \n");
+//                            os.writeBytes("echo `date`\": ready instrument \" >> /sdcard/bootup.txt \n");
                             os.writeBytes("sleep 10 \n");
-                            os.writeBytes("am start -n " + LinuxDeployPackage + "/" + LinuxDeployLauncher + " \n");
-                            os.writeBytes("exit \n");
+                            os.writeBytes("am instrument --user 0 -w -r -e debug false -e class com.oohoo.bootup.StartLinuxDeployTest#run com.oohoo.bootup/androidx.test.runner.AndroidJUnitRunner &");
                             os.flush();
 //                            process.waitFor();
 //                            XposedBridge.log("BootUp >>start package: "+ LinuxDeployPackage + "/" + LinuxDeployLauncher);
@@ -85,40 +86,41 @@ public class XposedInit implements IXposedHookLoadPackage
                     }
                 }
             );
-        }else if(LinuxDeployPackage.equals(loadPackageParam.packageName)){
-            findAndHookMethod(LinuxDeployClass, loadPackageParam.classLoader,
-                    "onCreate", Bundle.class, new XC_MethodHook(){
-                        @SuppressLint("SetTextI18n")
-                        @Override
-                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                            Object activityThread = callStaticMethod(findClass(
-                                    "android.app.ActivityThread", null),
-                                    "currentActivityThread");
-                            Context mContext = (Context) callMethod(activityThread,
-                                    "getSystemContext");
-                            MultiProcessSharedPreferences.setAuthority("com.oohoo.bootup.provider");
-                            SharedPreferences settings = MultiProcessSharedPreferences.getSharedPreferences(mContext, MainActivity.ButtonPositionKey, Context.MODE_PRIVATE);
-                            int startXV = settings.getInt("startX", -1);
-                            int startYV = settings.getInt("startY", -1);
-                            int confirmXV = settings.getInt("confirmX", -1);
-                            int confirmYV = settings.getInt("confirmY", -1);
-                            XposedBridge.log("BootUp >> value tap " + startXV + " " + startYV + " " + confirmXV + " " + confirmYV);
-                            if(startXV >= 0 && startYV >= 0 && confirmXV >= 0 && confirmYV >= 0){
-                                Process process = Runtime.getRuntime().exec("su");
-                                DataOutputStream os = new DataOutputStream(process.getOutputStream());
-                                os.writeBytes("sleep 2 \n");
-                                os.writeBytes("input tap " + startXV + " " + startYV + " \n");
-                                os.writeBytes("sleep 1 \n");
-                                os.writeBytes("input tap " + confirmXV + " " + confirmYV + " \n");
-                                os.writeBytes("sleep 1 \n");
-                                os.writeBytes("input keyevent KEYCODE_POWER \n");
-                                os.writeBytes("echo -n 'mtp,adb' > /data/property/persist.sys.usb.config \n");
-                                os.writeBytes("exit \n");
-                                os.flush();
-                            }
-                        }
-                    }
-            );
         }
+//        else if(LinuxDeployPackage.equals(loadPackageParam.packageName)){
+//            findAndHookMethod(LinuxDeployClass, loadPackageParam.classLoader,
+//                    "onCreate", Bundle.class, new XC_MethodHook(){
+//                        @SuppressLint("SetTextI18n")
+//                        @Override
+//                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+//                            Object activityThread = callStaticMethod(findClass(
+//                                    "android.app.ActivityThread", null),
+//                                    "currentActivityThread");
+//                            Context mContext = (Context) callMethod(activityThread,
+//                                    "getSystemContext");
+//                            MultiProcessSharedPreferences.setAuthority("com.oohoo.bootup.provider");
+//                            SharedPreferences settings = MultiProcessSharedPreferences.getSharedPreferences(mContext, MainActivity.ButtonPositionKey, Context.MODE_PRIVATE);
+//                            int startXV = settings.getInt("startX", -1);
+//                            int startYV = settings.getInt("startY", -1);
+//                            int confirmXV = settings.getInt("confirmX", -1);
+//                            int confirmYV = settings.getInt("confirmY", -1);
+//                            XposedBridge.log("BootUp >> value tap " + startXV + " " + startYV + " " + confirmXV + " " + confirmYV);
+//                            if(startXV >= 0 && startYV >= 0 && confirmXV >= 0 && confirmYV >= 0){
+//                                Process process = Runtime.getRuntime().exec("su");
+//                                DataOutputStream os = new DataOutputStream(process.getOutputStream());
+//                                os.writeBytes("sleep 2 \n");
+//                                os.writeBytes("input tap " + startXV + " " + startYV + " \n");
+//                                os.writeBytes("sleep 1 \n");
+//                                os.writeBytes("input tap " + confirmXV + " " + confirmYV + " \n");
+//                                os.writeBytes("sleep 1 \n");
+//                                os.writeBytes("input keyevent KEYCODE_POWER \n");
+//                                os.writeBytes("echo -n 'mtp,adb' > /data/property/persist.sys.usb.config \n");
+//                                os.writeBytes("exit \n");
+//                                os.flush();
+//                            }
+//                        }
+//                    }
+//            );
+//        }
     }
 }
